@@ -1,0 +1,61 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <time.h>
+#include <sys/wait.h>
+int main() {
+pid_t pid1, pid2;
+pid1 = fork();
+
+if (pid1 < 0) {
+perror("Fork failed");
+exit(1);
+} 
+else if (pid1 == 0) {
+clock_t start_time = clock();
+
+for (volatile long i = 0; i < 50000000; i++);
+
+clock_t end_time = clock();
+double elapsed_ms = ((double)(end_time - start_time) * 1000.0) / CLOCKS_PER_SEC;
+
+printf("[Child 1] PID: %d | PPID: %d | Execution Time: %.2f ms\n", 
+getpid(), getppid(), elapsed_ms);
+exit(0);
+}
+
+pid2 = fork();
+
+if (pid2 < 0) {
+perror("Fork failed");
+exit(1);
+} 
+else if (pid2 == 0) {
+clock_t start_time = clock();
+
+for (volatile long i = 0; i < 80000000; i++);
+
+clock_t end_time = clock();
+double elapsed_ms = ((double)(end_time - start_time) * 1000.0) / CLOCKS_PER_SEC;
+
+printf("[Child 2] PID: %d | PPID: %d | Execution Time: %.2f ms\n", 
+getpid(), getppid(), elapsed_ms);
+exit(0);
+}
+
+clock_t start_time = clock();
+
+for (volatile long i = 0; i < 30000000; i++);
+
+wait(NULL);
+wait(NULL);
+
+clock_t end_time = clock();
+double elapsed_ms = ((double)(end_time - start_time) * 1000.0) / CLOCKS_PER_SEC;
+
+printf("[Main] PID: %d | PPID: %d | Execution Time: %.2f ms\n", 
+getpid(), getppid(), elapsed_ms);
+
+return 0;
+
+}
